@@ -22,7 +22,7 @@ import os
 from tqdm.auto import tqdm
 import argparse
 
-# %% ../nbs/02_cv_ops.ipynb 4
+# %% ../nbs/02_cv_ops.ipynb 5
 def remove_small_objects(
         binary_mask:np.ndarray,  # np.ndarry
         size_threshold:Union[float, int] # 
@@ -34,13 +34,13 @@ def remove_small_objects(
     binary_mask = mask_sizes > size_threshold
     return binary_mask
 
-# %% ../nbs/02_cv_ops.ipynb 5
+# %% ../nbs/02_cv_ops.ipynb 6
 def fill_holes_in_objects(binary_mask):
     'Fill holes inside binary mask'
     filled_mask = binary_fill_holes(binary_mask)
     return filled_mask
 
-# %% ../nbs/02_cv_ops.ipynb 6
+# %% ../nbs/02_cv_ops.ipynb 7
 def convert_to_rotated_rectangles(binary_mask):
     'Convert binary mask arbitary from to  rotated rectange '
     contours, _ = cv2.findContours(binary_mask.astype(np.uint8), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)

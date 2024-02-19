@@ -234,7 +234,7 @@ def overlay_mask_border_on_image(
         ax.imshow(new_img, cmap='gray')
         ax.axis('off')  # Turn off axis numbers
     else:
-        fig, ax = plt.subplots(figsize=(scale_*new_img.shape[1] / dpi, scale_*new_img.shape[0] / dpi))
+        fig, ax = plt.subplots(figsize=(scale_*rgb_image.shape[1] / dpi, scale_*rgb_image.shape[0] / dpi))
         ax.imshow(rgb_image, cmap='gray')
         ax.axis('off')  # Turn off axis numbers
         if save_overlay_img_path is not None:
