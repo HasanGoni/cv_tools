@@ -2,8 +2,8 @@
 
 # %% auto 0
 __all__ = ['get_name_', 'dpi', 'label_mask', 'show_labeled_mask', 'write_new_mask', 'remove_object_from_mask', 'read_img',
-           'show_', 'normalize', 'overlay_mask', 'overlay_mask_border_on_image', 'concat_images',
-           'show_poster_from_path', 'get_template_part', 'split_image', 'find_contours_binary', 'foo']
+           'show_', 'overlay_mask', 'overlay_mask_border_on_image', 'concat_images', 'show_poster_from_path',
+           'get_template_part', 'split_image', 'find_contours_binary', 'foo']
 
 # %% ../nbs/00_core.ipynb 2
 from PIL import Image
@@ -15,7 +15,7 @@ import pandas as pd
 import shutil
 from tqdm.auto import tqdm
 from typing import Union, Dict, List
-import tensorflow as tf
+#import tensorflow as tf
 import matplotlib.pyplot as plt
 from scipy.ndimage import (
     label, binary_dilation, binary_erosion,label,
@@ -129,17 +129,17 @@ def show_(
         ax.axis('off')
 
 # %% ../nbs/00_core.ipynb 11
-def normalize(
-              image:Union[np.ndarray, tf.Tensor], 
-              min=0):
-    def _normalize(im):
-        img = tf.cast(im, tf.float32)
-        return img / 255.0
+#def normalize(
+              #image:Union[np.ndarray, tf.Tensor], 
+              #min=0):
+    #def _normalize(im):
+        #img = tf.cast(im, tf.float32)
+        #return img / 255.0
 
-    if min == 0:
-        return _normalize(image)
-    else:
-        return (_normalize(image) * 2.0) -1.0
+    #if min == 0:
+        #return _normalize(image)
+    #else:
+        #return (_normalize(image) * 2.0) -1.0
 
 # %% ../nbs/00_core.ipynb 13
 def overlay_mask(
