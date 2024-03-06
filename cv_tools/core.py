@@ -91,7 +91,7 @@ def read_img(
         if gray:
             return cv2.imread(f'{im_path}', cv2.IMREAD_GRAYSCALE)
         else:
-            cv2.cvtColor(cv2.imread(f'{im_path}'), cv2.COLOR_BGR2RGB)
+            return cv2.cvtColor(cv2.imread(f'{im_path}'), cv2.COLOR_BGR2RGB)
     
     return Image.open(im_path)
 
@@ -183,7 +183,8 @@ def overlay_mask_border_on_image(
         new_img:Union[List, np.ndarray, None] = None,
         scale_:int=1,
         border_color: Tuple[int, int, int] = (0, 1, 0),
-        border_width: int = 1):
+        border_width: int = 1,
+        show_:bool=False):
     """
     Overlays the border of a binary mask on a grayscale image and displays the result using matplotlib.
 
@@ -230,13 +231,15 @@ def overlay_mask_border_on_image(
         new_img = new_img.astype(np.uint8)
         if save_new_img_path is not None:
             cv2.imwrite(f'{save_new_img_path}/{name_}', new_img)
-        fig, ax = plt.subplots(figsize=(scale_*new_img.shape[1] / dpi, scale_*new_img.shape[0] / dpi))
-        ax.imshow(new_img, cmap='gray')
-        ax.axis('off')  # Turn off axis numbers
+        if show_:
+            fig, ax = plt.subplots(figsize=(scale_*new_img.shape[1] / dpi, scale_*new_img.shape[0] / dpi))
+            ax.imshow(new_img, cmap='gray')
+            ax.axis('off')  # Turn off axis numbers
     else:
-        fig, ax = plt.subplots(figsize=(scale_*rgb_image.shape[1] / dpi, scale_*rgb_image.shape[0] / dpi))
-        ax.imshow(rgb_image, cmap='gray')
-        ax.axis('off')  # Turn off axis numbers
+        if show_:
+            fig, ax = plt.subplots(figsize=(scale_*rgb_image.shape[1] / dpi, scale_*rgb_image.shape[0] / dpi))
+            ax.imshow(rgb_image, cmap='gray')
+            ax.axis('off')  # Turn off axis numbers
         if save_overlay_img_path is not None:
             cv2.imwrite(f'{save_overlay_img_path}/{name_}', rgb_image)
 
@@ -244,12 +247,12 @@ def overlay_mask_border_on_image(
 
 # %% ../nbs/00_core.ipynb 15
 def concat_images(
-        images, 
-        rows, 
-        cols, 
-        number):
+        images:List[np.ndarray],
+        rows:int,  # number of rows
+        cols:int,  # number of columns in combined images
+        number:str # a text which will be inserted in the combined image
+        ):
     'Concate images rows and cols and add a number to the image.'
-    result = []
     targe_h = min([i.shape[0] for i in images])
     target_w = min([i.shape[1] for i in images])
     res_img = [cv2.resize(i, (target_w, targe_h)) for i in images]
