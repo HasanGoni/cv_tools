@@ -3,7 +3,8 @@
 # %% auto 0
 __all__ = ['get_name_', 'dpi', 'label_mask', 'show_labeled_mask', 'write_new_mask', 'remove_object_from_mask', 'read_img',
            'show_', 'overlay_mask', 'overlay_mask_border_on_image', 'concat_images', 'show_poster_from_path',
-           'get_template_part', 'split_image', 'find_contours_binary', 'foo']
+           'get_template_part', 'split_image', 'split_image_with_coordinates', 'create_same_shape',
+           'find_contours_binary', 'foo']
 
 # %% ../nbs/00_core.ipynb 2
 from PIL import Image
@@ -378,6 +379,45 @@ def split_image(
     return parts
 
 # %% ../nbs/00_core.ipynb 19
+def split_image_with_coordinates(img: np.ndarray, num_splits: int, direction: str) -> list:
+    indexed_parts_with_coords = []
+    split_size = img.shape[0] // num_splits if direction == 'vertical' else img.shape[1] // num_splits
+
+    for i in range(num_splits):
+        if direction == 'vertical':
+            start_y = i * split_size
+            end_y = img.shape[0] if i == num_splits - 1 else (i + 1) * split_size
+            part = img[start_y:end_y, :]
+            coordinates = (0, start_y, img.shape[1], end_y)
+        else:  # 'horizontal'
+            start_x = i * split_size
+            end_x = img.shape[1] if i == num_splits - 1 else (i + 1) * split_size
+            part = img[:, start_x:end_x]
+            coordinates = (start_x, 0, end_x, img.shape[0])
+        indexed_parts_with_coords.append((i, part, coordinates))
+
+    return indexed_parts_with_coords
+
+# %% ../nbs/00_core.ipynb 20
+def create_same_shape(
+        src_img:np.ndarray, # image which size needs to be replicated
+        dst_img:np.ndarray, # image which needs to resized
+    ):
+    'Create same shape of dst image like src_img'
+
+    h, w = src_img[:2]
+    add_h, add_w = dst_img[:2]
+
+    if h > add_h or w > add_w:
+        raise NotImplementedError('src_img should be smaller than dst_img')
+    else:
+        start_h, start_w = (add_h - h) // 2, (add_w - w) // 2
+        end_h, end_w = start_h + h, start_w + w
+        new = dst_img[start_h:end_h, start_w:end_w]
+        return new
+
+
+# %% ../nbs/00_core.ipynb 21
 def find_contours_binary(
     img:np.ndarray, # binary image 
     ):
@@ -386,5 +426,5 @@ def find_contours_binary(
     return cntrs
 
 
-# %% ../nbs/00_core.ipynb 21
+# %% ../nbs/00_core.ipynb 23
 def foo(): pass
