@@ -379,7 +379,11 @@ def split_image(
     return parts
 
 # %% ../nbs/00_core.ipynb 19
-def split_image_with_coordinates(img: np.ndarray, num_splits: int, direction: str) -> list:
+def split_image_with_coordinates(
+        img: np.ndarray, 
+        num_splits: int, 
+        direction: str) -> list:
+    'Split an image with different parts in different coordinates'
     indexed_parts_with_coords = []
     split_size = img.shape[0] // num_splits if direction == 'vertical' else img.shape[1] // num_splits
 
