@@ -27,6 +27,9 @@ def display_image_row(
         im_width:int=100,
     ): 
 
+
+    Path(move_path).mkdir(exist_ok=True, parents=True)
+
     def on_next_click(b):
         nonlocal start
 
