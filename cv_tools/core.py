@@ -4,20 +4,20 @@
 __all__ = ['get_name_', 'dpi', 'label_mask', 'show_labeled_mask', 'write_new_mask', 'remove_object_from_mask', 'read_img',
            'show_', 'overlay_mask', 'overlay_mask_border_on_image', 'concat_images', 'show_poster_from_path',
            'get_template_part', 'split_image', 'split_image_with_coordinates', 'create_same_shape',
-           'find_contours_binary', 'foo']
+           'get_circle_from_single_pin', 'find_contours_binary', 'foo']
 
 # %% ../nbs/00_core.ipynb 2
 from PIL import Image
 import cv2
 from fastcore.all import *
 from pathlib import Path
-import numpy as np
+import numpy as np 
 import pandas as pd
 import shutil
 from tqdm.auto import tqdm
 from typing import Union, Dict, List
-#import tensorflow as tf
 import matplotlib.pyplot as plt
+from typing import Tuple
 from scipy.ndimage import (
     label, binary_dilation, binary_erosion,label,
     )
@@ -409,8 +409,8 @@ def create_same_shape(
     ):
     'Create same shape of dst image like src_img'
 
-    h, w = src_img[:2]
-    add_h, add_w = dst_img[:2]
+    h, w = src_img.shape[:2]
+    add_h, add_w = dst_img.shape[:2]
 
     if h > add_h or w > add_w:
         raise NotImplementedError('src_img should be smaller than dst_img')
@@ -422,6 +422,51 @@ def create_same_shape(
 
 
 # %% ../nbs/00_core.ipynb 21
+def get_circle_from_single_pin(
+                            sn_pin_img:np.ndarray
+                              )->Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    'Get the circle from single pin image'
+
+    # Apply Gaussian blur to reduce noise
+    pin_img = cv2.GaussianBlur(sn_pin_img, (5, 5), 0)
+
+
+    ## Apply Hough Circle Transform to detect circles
+    circles = cv2.HoughCircles(
+                               pin_img, 
+                               cv2.HOUGH_GRADIENT, 
+                               1, 
+                               20,
+                               param1=50, 
+                               param2=30, 
+                               minRadius=0, 
+                               maxRadius=0)
+    
+    # If circles are detected
+    if circles is not None:
+        # Get the coordinates and radius of the detected circle
+        circles = np.uint16(np.around(circles))
+
+        mask = np.zeros_like(pin_img)  # Mask image with same dimensions as original, initialized to black
+        rest = np.copy(pin_img)  # Copy of the original image to isolate the non-circular part
+        print(f' Number of circles found  = {len(circles[0])}')
+
+        for i in circles[0, :]:
+            # Draw the outer circle on the mask and fill it to create a solid circle
+            cv2.circle(mask, (i[0], i[1]), i[2], (255, 255, 255), thickness=-1)  # White circle on black background
+
+            # Cut the circular part from the rest image
+            cv2.circle(rest, (i[0], i[1]), i[2], (0, 0, 0), thickness=-1)  # Draw black circle on original
+
+        # Apply mask to the original image to extract only the circular part
+        segmented_circle = cv2.bitwise_and(pin_img, mask)
+        return segmented_circle, mask, rest
+    else:
+        print('No circles found')
+        return None, None, None
+
+
+# %% ../nbs/00_core.ipynb 22
 def find_contours_binary(
     img:np.ndarray, # binary image 
     ):
@@ -430,5 +475,5 @@ def find_contours_binary(
     return cntrs
 
 
-# %% ../nbs/00_core.ipynb 23
+# %% ../nbs/00_core.ipynb 24
 def foo(): pass
