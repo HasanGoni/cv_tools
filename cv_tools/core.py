@@ -2,7 +2,7 @@
 
 # %% auto 0
 __all__ = ['OpenCvImage', 'get_name_', 'dpi', 'label_mask', 'show_labeled_mask', 'write_new_mask', 'remove_object_from_mask',
-           'read_img', 'show_', 'overlay_mask', 'overlay_mask_border_on_image', 'concat_images',
+           'read_img', 'show_', 'center_crop', 'overlay_mask', 'overlay_mask_border_on_image', 'concat_images',
            'show_poster_from_path', 'seamless_clone', 'get_template_part', 'split_image',
            'split_image_with_coordinates', 'create_same_shape', 'get_circle_from_single_pin', 'find_contours_binary',
            'adjust_brightness', 'foo']
@@ -145,6 +145,38 @@ def show_(
         #return _normalize(image)
     #else:
         #return (_normalize(image) * 2.0) -1.0
+
+# %% ../nbs/00_core.ipynb 13
+def center_crop(
+        image:Image,# not open cv but PIL Image 
+        desired_width:int=1632,
+        desired_height:int=1152,
+        height_offset:int=-50,
+        width_offset:int=-70,
+        cv:bool=True
+        ):
+    # Get the current size of the image
+    width, height = image.size
+
+    # Calculate the coordinates of the center of the image
+    center_x = (width // 2 + (width_offset))
+    center_y = (height // 2 + (height_offset))
+
+    # Calculate the coordinates of the top-left corner of the crop
+    left = center_x - desired_width // 2
+    top = center_y - desired_height // 2
+
+    # Calculate the coordinates of the bottom-right corner of the crop
+    right = center_x + desired_width // 2
+    bottom = center_y + desired_height // 2
+
+    # Crop the image
+    cropped_image = image.crop((left, top, right, bottom))
+    #print(f'cropped_image size = {cropped_image.size}')
+    if cv:
+        return np.array(cropped_image)
+
+    return cropped_image
 
 # %% ../nbs/00_core.ipynb 14
 def overlay_mask(
