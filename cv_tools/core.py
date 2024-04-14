@@ -534,13 +534,12 @@ def find_contours_binary(
 
 # %% ../nbs/00_core.ipynb 25
 def adjust_brightness(
-    image_path:Union[Path, str], 
+    img:np.ndarray, # image to adjust brightness
     alpha:float, # alpha > 1 to brighten; alpha < 1 to darken
     ):
     'Adjust the brightness of the image'
-    image = cv2.imread(image_path)
     adjusted = cv2.convertScaleAbs(
-        image, 
+        img, 
         alpha=alpha)  # alpha > 1 to brighten; alpha < 1 to darken
     return adjusted
 
