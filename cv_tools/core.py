@@ -302,6 +302,8 @@ def overlay_mask_border_on_image_frm_img(
     cv2_msk = np.array(msk) if isinstance(msk, Image.Image) else msk
 
     msk_uint8 = (cv2_msk* 255).astype(np.uint8)
+    if len(msk_uint8.shape) == 3 and msk_uint8.shape[2] == 3:
+        msk_uint8 = cv2.cvtColor(msk_uint8, cv2.COLOR_RGB2GRAY)
     cntrs, _, = cv2.findContours(msk_uint8, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cv2.drawContours(
         cv2_img, 
