@@ -395,18 +395,27 @@ def seamless_clone(
         full_img:OpenCvImage, # gray scale image
         replace_part:OpenCvImage, # gray scale image
         center:Tuple[int, int],# center position in full_img #where the replace_part will be placed
+        clone_method:str='normal'
     ):
     'Replace some part of full_img with replace_part object'
     full_img = cv2.cvtColor(full_img, cv2.COLOR_GRAY2BGR)
 
     replace_part = cv2.cvtColor(replace_part, cv2.COLOR_GRAY2BGR)
     mask = np.ones_like(replace_part)*255
-    cloned_img = cv2.seamlessClone(
-        replace_part,
-        full_img,
-        mask,
-        center,
-        cv2.NORMAL_CLONE)
+    if clone_method == 'mixed':
+        cloned_img = cv2.seamlessClone(
+            replace_part,
+            full_img,
+            mask,
+            center,
+            cv2.MIXED_CLONE)
+    else:
+        cloned_img = cv2.seamlessClone(
+            replace_part,
+            full_img,
+            mask,
+            center,
+            cv2.NORMAL_CLONE)
     
     return cv2.cvtColor(cloned_img, cv2.COLOR_BGR2GRAY)
 
