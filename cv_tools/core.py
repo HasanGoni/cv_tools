@@ -2,10 +2,11 @@
 
 # %% auto 0
 __all__ = ['OpenCvImage', 'get_name_', 'dpi', 'label_mask', 'show_labeled_mask', 'write_new_mask', 'remove_object_from_mask',
-           'read_img', 'show_', 'center_crop', 'overlay_mask', 'overlay_mask_border_on_image', 'concat_images',
-           'show_poster_from_path', 'seamless_clone', 'get_template_part', 'split_image',
-           'split_image_with_coordinates', 'create_same_shape', 'get_circle_from_single_pin', 'find_contours_binary',
-           'adjust_brightness', 'ssim_', 'orb_sim_', 'frm_cntr_to_bbox', 'foo']
+           'read_img', 'show_', 'center_crop', 'overlay_mask', 'overlay_mask_border_on_image',
+           'overlay_mask_border_on_image_frm_img', 'concat_images', 'show_poster_from_path', 'seamless_clone',
+           'get_template_part', 'split_image', 'split_image_with_coordinates', 'create_same_shape',
+           'get_circle_from_single_pin', 'find_contours_binary', 'adjust_brightness', 'ssim_', 'orb_sim_',
+           'frm_cntr_to_bbox', 'foo']
 
 # %% ../nbs/00_core.ipynb 3
 from PIL import Image
@@ -290,6 +291,30 @@ def overlay_mask_border_on_image(
 
 
 # %% ../nbs/00_core.ipynb 18
+def overlay_mask_border_on_image_frm_img(
+        img:Union[OpenCvImage, Image.Image],
+        msk:Union[OpenCvImage, Image.Image],
+    ):
+    'Overlay mask border on image from image'
+    cv2_img = np.array(img) if isinstance(img, Image.Image) else img
+    cv2_img = cv2.cvtColor(cv2_img, cv2.COLOR_RGB2BGR)
+    # converting cv2 mask in case it is not 
+    cv2_msk = np.array(msk) if isinstance(msk, Image.Image) else msk
+
+    msk_uint8 = (cv2_msk* 255).astype(np.uint8)
+    if len(msk_uint8.shape) == 3 and msk_uint8.shape[2] == 3:
+        msk_uint8 = cv2.cvtColor(msk_uint8, cv2.COLOR_RGB2GRAY)
+    cntrs, _, = cv2.findContours(msk_uint8, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    cv2.drawContours(
+        cv2_img, 
+        contours=cntrs, 
+        contourIdx=-1, 
+        color=(0, 255, 0), 
+        thickness=2)
+    return cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)
+
+
+# %% ../nbs/00_core.ipynb 19
 def concat_images(
         images:List[np.ndarray],
         rows:int,  # number of rows
@@ -315,7 +340,7 @@ def concat_images(
     im_n = cv2.putText(new_img, f'{number}', position, font, font_scale, color, 1, cv2.LINE_AA)
     return im_n
 
-# %% ../nbs/00_core.ipynb 19
+# %% ../nbs/00_core.ipynb 20
 def show_poster_from_path(
                 mask_path:str, 
                 im_path:str, # name of the image fodler , e.g. 'images' or 'X'
@@ -365,7 +390,7 @@ def show_poster_from_path(
         fig, ax = plt.subplots(1, 1, figsize=(scale * res[1]/dpi, scale*res[0]/dpi))
         ax.imshow(img_new)
 
-# %% ../nbs/00_core.ipynb 20
+# %% ../nbs/00_core.ipynb 21
 def seamless_clone(
         full_img:OpenCvImage, # gray scale image
         replace_part:OpenCvImage, # gray scale image
@@ -386,7 +411,7 @@ def seamless_clone(
     return cv2.cvtColor(cloned_img, cv2.COLOR_BGR2GRAY)
 
 
-# %% ../nbs/00_core.ipynb 21
+# %% ../nbs/00_core.ipynb 22
 def get_template_part(
     img:np.ndarray, #opencv image
     tmp_img:np.ndarray # opencv image
@@ -411,7 +436,7 @@ def get_template_part(
    return x, y, w, h
    
 
-# %% ../nbs/00_core.ipynb 22
+# %% ../nbs/00_core.ipynb 23
 def split_image(
         img:np.ndarray,
         num_splits:int,
@@ -442,7 +467,7 @@ def split_image(
 
     return parts
 
-# %% ../nbs/00_core.ipynb 23
+# %% ../nbs/00_core.ipynb 24
 def split_image_with_coordinates(
         img: np.ndarray, 
         num_splits: int, 
@@ -466,7 +491,7 @@ def split_image_with_coordinates(
 
     return indexed_parts_with_coords
 
-# %% ../nbs/00_core.ipynb 24
+# %% ../nbs/00_core.ipynb 25
 def create_same_shape(
         src_img:np.ndarray, # image which size needs to be replicated
         dst_img:np.ndarray, # image which needs to resized
@@ -485,7 +510,7 @@ def create_same_shape(
         return new
 
 
-# %% ../nbs/00_core.ipynb 25
+# %% ../nbs/00_core.ipynb 26
 def get_circle_from_single_pin(
                             sn_pin_img:np.ndarray
                               )->Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -530,7 +555,7 @@ def get_circle_from_single_pin(
         return None, None, None
 
 
-# %% ../nbs/00_core.ipynb 26
+# %% ../nbs/00_core.ipynb 27
 def find_contours_binary(
     img:np.ndarray, # binary image 
     ):
@@ -539,7 +564,7 @@ def find_contours_binary(
     return cntrs
 
 
-# %% ../nbs/00_core.ipynb 27
+# %% ../nbs/00_core.ipynb 28
 def adjust_brightness(
     img:np.ndarray, # image to adjust brightness
     alpha:float, # alpha > 1 to brighten; alpha < 1 to darken
@@ -550,7 +575,7 @@ def adjust_brightness(
         alpha=alpha)  # alpha > 1 to brighten; alpha < 1 to darken
     return adjusted
 
-# %% ../nbs/00_core.ipynb 28
+# %% ../nbs/00_core.ipynb 29
 def ssim_(
         img1:np.ndarray, 
         img2:np.ndarray,
@@ -560,7 +585,7 @@ def ssim_(
     return ssim(img1, img2, win_size=win_size
                 )
 
-# %% ../nbs/00_core.ipynb 29
+# %% ../nbs/00_core.ipynb 30
 def orb_sim_(
         img1:np.ndarray, 
         img2:np.ndarray):
@@ -585,10 +610,10 @@ def orb_sim_(
         return len(list(sim_reg))/len(matches)
 
 
-# %% ../nbs/00_core.ipynb 30
+# %% ../nbs/00_core.ipynb 31
 def frm_cntr_to_bbox(cntr):
     x,y,w,h = cv2.boundingRect(cntr)
     return x,y,w,h
 
-# %% ../nbs/00_core.ipynb 31
+# %% ../nbs/00_core.ipynb 32
 def foo(): pass
