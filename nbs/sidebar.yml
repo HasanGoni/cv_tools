@@ -3,7 +3,6 @@ website:
     contents:
       - index.ipynb
       - 00_core.ipynb
-      - 01_patch_dataset.ipynb
-      - 02_data_preparation.ipynb
+      - 02_cv_ops.ipynb
       - 03_dataset_check.ipynb
       - 04_compress_and_filter_data.ipynb
