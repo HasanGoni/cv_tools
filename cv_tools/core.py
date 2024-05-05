@@ -419,7 +419,6 @@ def seamless_clone(
     
     return cv2.cvtColor(cloned_img, cv2.COLOR_BGR2GRAY)
 
-
 # %% ../nbs/00_core.ipynb 22
 def get_template_part(
     img:np.ndarray, #opencv image
