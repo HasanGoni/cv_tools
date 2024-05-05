@@ -5,5 +5,5 @@ website:
   title: "cv_tools"
   site-url: "https://HasanGoni.github.io/cv_tools"
   description: "computer vision related tools"
-  repo-branch: main
+  repo-branch: master
   repo-url: "https://github.com/HasanGoni/cv_tools"
