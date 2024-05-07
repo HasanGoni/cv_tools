@@ -7,14 +7,26 @@ d = { 'settings': { 'branch': 'master',
                 'lib_path': 'cv_tools'},
   'syms': { 'cv_tools.compress_and_filter': { 'cv_tools.compress_and_filter.apply_functions': ( 'compress_and_filter_data.html#apply_functions',
                                                                                                 'cv_tools/compress_and_filter.py'),
+<<<<<<< HEAD
                                               'cv_tools.compress_and_filter.convert_image_to_parquet_p': ( 'compress_and_filter_data.html#convert_image_to_parquet_p',
                                                                                                            'cv_tools/compress_and_filter.py'),
+=======
+                                              'cv_tools.compress_and_filter.binary_to_image': ( 'compress_and_filter_data.html#binary_to_image',
+                                                                                                'cv_tools/compress_and_filter.py'),
+>>>>>>> de4a42b (save image is added in compress_and_filter notebook)
                                               'cv_tools.compress_and_filter.convert_images_to_parquet': ( 'compress_and_filter_data.html#convert_images_to_parquet',
                                                                                                           'cv_tools/compress_and_filter.py'),
                                               'cv_tools.compress_and_filter.filter_images': ( 'compress_and_filter_data.html#filter_images',
                                                                                               'cv_tools/compress_and_filter.py'),
+<<<<<<< HEAD
                                               'cv_tools.compress_and_filter.process_image': ( 'compress_and_filter_data.html#process_image',
                                                                                               'cv_tools/compress_and_filter.py')},
+=======
+                                              'cv_tools.compress_and_filter.read_images_from_parquet': ( 'compress_and_filter_data.html#read_images_from_parquet',
+                                                                                                         'cv_tools/compress_and_filter.py'),
+                                              'cv_tools.compress_and_filter.save_image': ( 'compress_and_filter_data.html#save_image',
+                                                                                           'cv_tools/compress_and_filter.py')},
+>>>>>>> de4a42b (save image is added in compress_and_filter notebook)
             'cv_tools.core': { 'cv_tools.core.Path.filter_': ('core.html#path.filter_', 'cv_tools/core.py'),
                                'cv_tools.core.adjust_brightness': ('core.html#adjust_brightness', 'cv_tools/core.py'),
                                'cv_tools.core.center_crop': ('core.html#center_crop', 'cv_tools/core.py'),
