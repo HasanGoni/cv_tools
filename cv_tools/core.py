@@ -6,7 +6,7 @@ __all__ = ['OpenCvImage', 'get_name_', 'dpi', 'label_mask', 'show_labeled_mask',
            'overlay_mask_border_on_image_frm_img', 'concat_images', 'show_poster_from_path', 'seamless_clone',
            'get_template_part', 'split_image', 'split_image_with_coordinates', 'create_same_shape',
            'get_circle_from_single_pin', 'find_contours_binary', 'adjust_brightness', 'ssim_', 'orb_sim_',
-           'frm_cntr_to_bbox', 'foo']
+           'rot_based_on_ref_img', 'frm_cntr_to_bbox', 'foo']
 
 # %% ../nbs/00_core.ipynb 3
 from PIL import Image
@@ -619,9 +619,50 @@ def orb_sim_(
 
 
 # %% ../nbs/00_core.ipynb 31
+def rot_based_on_ref_img(
+    ref_img:Union[np.ndarray, Image], # Image will be used refeernece image
+    tst_img:Union[np.ndarray, Image], # Image where searched for key points
+    show_m:bool=True # whether to show matching points of two images
+    )->np.ndarray:
+    'Rotate the tst_img based on ref image, find key points in ref image and then rotate tst_img'
+    if isinstance(ref_img, Image.Image):
+        ref_img = np.array(ref_img)
+    
+    if isinstance(tst_img, Image.Image):
+        tst_img = np.array(tst_img)
+    orb = cv2.ORB_create(50)
+    # find the keypoints and descriptors with orb
+    kp1, des1 = orb.detectAndCompute(ref_img, None)  #kp1 --> list of keypoints
+    kp2, des2 = orb.detectAndCompute(tst_img, None)
+    matcher = cv2.DescriptorMatcher_create(cv2.DESCRIPTOR_MATCHER_BRUTEFORCE_HAMMING)
+    #Match descriptors.
+    matches = matcher.match(des1, des2, None) 
+    #Creates a list of all matches, just like keypoints
+    img3 = cv2.drawMatches(ref_img,kp1, tst_img, kp2, matches[:10], None)
+    if show_m: show_(img3)
+    points1 = np.zeros((len(matches), 2), dtype=np.float32)  
+    #Prints empty array of size equal to (matches, 2)
+    points2 = np.zeros((len(matches), 2), dtype=np.float32)
+
+    for i, match in enumerate(matches):
+        points1[i, :] = kp1[match.queryIdx].pt    #gives index of the descriptor in the list of query descriptors
+        points2[i, :] = kp2[match.trainIdx].pt    #gives index of the descriptor in the list of train descriptors
+    h, mask = cv2.findHomography(points1, points2, cv2.RANSAC)
+
+    if len(tst_img.shape) > 2:
+        height, width, ch = tst_img.shape
+    else:
+        height, widht, ch = tst_img.shape
+    
+    im1Reg = cv2.warpPerspective(ref_img, h, (width, height)) 
+    return im1Reg
+    
+
+
+# %% ../nbs/00_core.ipynb 32
 def frm_cntr_to_bbox(cntr):
     x,y,w,h = cv2.boundingRect(cntr)
     return x,y,w,h
 
-# %% ../nbs/00_core.ipynb 32
+# %% ../nbs/00_core.ipynb 33
 def foo(): pass
