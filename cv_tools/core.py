@@ -620,8 +620,8 @@ def orb_sim_(
 
 # %% ../nbs/00_core.ipynb 31
 def rot_based_on_ref_img(
-    ref_img:Union[np.ndarray, Image], # Image will be used refeernece image
-    tst_img:Union[np.ndarray, Image], # Image where searched for key points
+    ref_img:Union[np.ndarray, Image.Image], # Image will be used refeernece image
+    tst_img:Union[np.ndarray, Image.Image], # Image where searched for key points
     show_m:bool=True # whether to show matching points of two images
     )->np.ndarray:
     'Rotate the tst_img based on ref image, find key points in ref image and then rotate tst_img'
@@ -632,13 +632,13 @@ def rot_based_on_ref_img(
         tst_img = np.array(tst_img)
     orb = cv2.ORB_create(50)
     # find the keypoints and descriptors with orb
-    kp1, des1 = orb.detectAndCompute(ref_img, None)  #kp1 --> list of keypoints
-    kp2, des2 = orb.detectAndCompute(tst_img, None)
+    kp1, des1 = orb.detectAndCompute(tst_img, None)  #kp1 --> list of keypoints
+    kp2, des2 = orb.detectAndCompute(ref_img, None)
     matcher = cv2.DescriptorMatcher_create(cv2.DESCRIPTOR_MATCHER_BRUTEFORCE_HAMMING)
     #Match descriptors.
     matches = matcher.match(des1, des2, None) 
     #Creates a list of all matches, just like keypoints
-    img3 = cv2.drawMatches(ref_img,kp1, tst_img, kp2, matches[:10], None)
+    img3 = cv2.drawMatches(tst_img,kp1, ref_img, kp2, matches[:10], None)
     if show_m: show_(img3)
     points1 = np.zeros((len(matches), 2), dtype=np.float32)  
     #Prints empty array of size equal to (matches, 2)
@@ -650,11 +650,11 @@ def rot_based_on_ref_img(
     h, mask = cv2.findHomography(points1, points2, cv2.RANSAC)
 
     if len(tst_img.shape) > 2:
-        height, width, ch = tst_img.shape
+        height, width, ch = ref_img.shape
     else:
-        height, widht, ch = tst_img.shape
+        height, width = ref_img.shape
     
-    im1Reg = cv2.warpPerspective(ref_img, h, (width, height)) 
+    im1Reg = cv2.warpPerspective(tst_img, h, (width, height)) 
     return im1Reg
     
 
