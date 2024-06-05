@@ -106,7 +106,12 @@ def read_img(
         else:
             return cv2.cvtColor(cv2.imread(f'{im_path}'), cv2.COLOR_BGR2RGB)
     
-    return Image.open(im_path)
+    else:
+        img = Image.open(im_path)
+        if gray:
+            return img.convert('L')
+        else:
+            return img.convert('RGB')
 
 # %% ../nbs/00_core.ipynb 13
 def show_(
