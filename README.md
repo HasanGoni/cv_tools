@@ -418,6 +418,26 @@ convert_image_to_parquet_p(
     threadpool=False)
 ```
 
+### decode image if the image size small
+
+``` python
+images = read_images_from_parquet(
+    parquet_path=Path(parquet_path)
+    num_workers=4
+)
+```
+
+### decode image if the image size big
+
+``` python
+decode_batch(
+    pr_path=Path(pr_path),
+    batch_size=600,
+    num_workers=4, 
+    output_dir=Path(output_dir)
+)
+```
+
 ``` python
 ```
 
