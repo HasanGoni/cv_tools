@@ -115,14 +115,15 @@ def read_img(
 
 # %% ../nbs/00_core.ipynb 13
 def show_(
-    im_path:Union[str, np.ndarray]
+    im_path:Union[str, np.ndarray],
+	cmap:str='gray'
     ):
     'Showing an image could be image or str, '
 
     if isinstance(im_path,str) or isinstance(im_path, Path):
         im = Image.open(im_path)
         fig, ax = plt.subplots(figsize= (im.size[0]/dpi, im.size[1]/dpi))
-        ax.imshow(im)
+        ax.imshow(im, cmap=cmap)
         ax.axis('off')
     elif isinstance(im_path, list):
             for i in im_path:
@@ -130,12 +131,12 @@ def show_(
                     im = Image.open(i)
                     h, w = im.size
                     fig, ax = plt.subplots(figsize= (w/dpi, h/dpi))
-                    ax.imshow(i)
+                    ax.imshow(i, cmap=cmap)
                     ax.axis('off')
                 elif isinstance(i, np.ndarray):
                     h, w = i.shape[0], i.shape[1]
                     fig, ax = plt.subplots(figsize= (w/dpi, h/dpi))
-                    ax.imshow(i)
+                    ax.imshow(i, cmap=cmap)
                     ax.axis('off')
                     
                     
@@ -143,7 +144,7 @@ def show_(
         h, w = im_path.shape[0], im_path.shape[1]
         fig, ax = plt.subplots(figsize= (w/dpi, h/dpi))
         im = im_path
-        ax.imshow(im)
+        ax.imshow(im,cmap=cmap)
         ax.axis('off')
 
 # %% ../nbs/00_core.ipynb 14
