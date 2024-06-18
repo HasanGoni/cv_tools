@@ -2,11 +2,12 @@
 
 # %% auto 0
 __all__ = ['OpenCvImage', 'get_name_', 'dpi', 'label_mask', 'show_labeled_mask', 'write_new_mask', 'remove_object_from_mask',
-           'read_img', 'blur_img_', 'median_img_', 'canny_img_', 'sharpen_img_', 'filter_img_', 'show_', 'center_crop',
-           'overlay_mask', 'overlay_mask_border_on_image', 'overlay_mask_border_on_image_frm_img', 'concat_images',
-           'show_poster_from_path', 'seamless_clone', 'get_template_part', 'split_image',
-           'split_image_with_coordinates', 'create_same_shape', 'get_circle_from_single_pin', 'find_contours_binary',
-           'adjust_brightness', 'ssim_', 'orb_sim_', 'rot_based_on_ref_img', 'frm_cntr_to_bbox', 'foo']
+           'read_img', 'blur_img_', 'median_img_', 'canny_img_', 'sharpen_img_', 'nlm_filter_', 'tv_filter_',
+           'filter_img_', 'show_', 'center_crop', 'overlay_mask', 'overlay_mask_border_on_image',
+           'overlay_mask_border_on_image_frm_img', 'concat_images', 'show_poster_from_path', 'seamless_clone',
+           'get_template_part', 'split_image', 'split_image_with_coordinates', 'create_same_shape',
+           'get_circle_from_single_pin', 'find_contours_binary', 'adjust_brightness', 'ssim_', 'orb_sim_',
+           'rot_based_on_ref_img', 'frm_cntr_to_bbox', 'foo']
 
 # %% ../nbs/00_core.ipynb 3
 from PIL import Image
@@ -25,6 +26,8 @@ from scipy.ndimage import (
     label, binary_dilation, binary_erosion,label,
     )
 from skimage.color import label2rgb
+from skimage.restoration import denoise_nl_means, estimate_sigma, denoise_tv_chambolle
+from skimage import img_as_float
 import matplotlib as mpl
 
 # %% ../nbs/00_core.ipynb 4
@@ -153,6 +156,50 @@ def sharpen_img_(
 
 
 # %% ../nbs/00_core.ipynb 17
+def nlm_filter_(
+    img:np.ndarray,  #image
+    multichannel:bool=False,
+    h:float=1.15,
+    fast_mode:bool=True,
+    patch_size:int=5,
+    patch_distance:int=3
+
+  ):
+  'Apply Non local means denoising filter to image'
+  img = img_as_float(img)
+  sigma_est = np.mean(
+    estimate_sigma(
+      img, multichannel=multichannel
+                  ) )
+  denoise_img = denoise_nl_means(
+    img, 
+    h=h* sigma_est, 
+    fast_mode=fast_mode,
+    patch_size=patch_size,
+    patch_distance=patch_distance,
+    multichannel=multichannel)
+  return denoise_img
+
+# %% ../nbs/00_core.ipynb 18
+def tv_filter_(
+    img:np.ndarray,  #image
+    multichannel:bool=False,
+    weight:float=0.1, # greater the weight, more denoising, but with less details
+    n_iter_max:int=200,
+
+    ):
+    'Apply total variation denoising filter to image'
+    img = img_as_float(img)
+    d_img = denoise_tv_chambolle(
+        img, 
+        weight=0.1, 
+        eps=0.0002,
+        n_iter_max=n_iter_max,
+        multichannel=multichannel)
+    return d_img
+    
+
+# %% ../nbs/00_core.ipynb 19
 def filter_img_(
         img:np.ndarray,  #image
         filters_:List[str] # opencv filters
@@ -164,7 +211,9 @@ def filter_img_(
         'blur': blur_img_,
         'med': median_img_,
         'canny': canny_img_,
-        'sharpen': sharpen_img_
+        'sharpen': sharpen_img_,
+        'nlm': nlm_filter_,
+        'tv': tv_filter_,
     }
     for fl in filters_:
         if fl in ops:
@@ -173,7 +222,7 @@ def filter_img_(
             print(f'Filter {fl} not found')
     return img
 
-# %% ../nbs/00_core.ipynb 19
+# %% ../nbs/00_core.ipynb 20
 def show_(
     im_path:Union[str, np.ndarray],
 	cmap:str='gray'
@@ -207,7 +256,7 @@ def show_(
         ax.imshow(im,cmap=cmap)
         ax.axis('off')
 
-# %% ../nbs/00_core.ipynb 20
+# %% ../nbs/00_core.ipynb 21
 #def normalize(
               #image:Union[np.ndarray, tf.Tensor], 
               #min=0):
@@ -220,7 +269,7 @@ def show_(
     #else:
         #return (_normalize(image) * 2.0) -1.0
 
-# %% ../nbs/00_core.ipynb 21
+# %% ../nbs/00_core.ipynb 22
 def center_crop(
         image:Image,# not open cv but PIL Image 
         desired_width:int=1632,
@@ -252,7 +301,7 @@ def center_crop(
 
     return cropped_image
 
-# %% ../nbs/00_core.ipynb 22
+# %% ../nbs/00_core.ipynb 23
 def overlay_mask(
         im_path:Union[str,Path],
         msk_path:Union[str,Path], 
@@ -285,7 +334,7 @@ def overlay_mask(
     clrd_overlay[mask_img]=overlay_clr
     ax.imshow(clrd_overlay, alpha=alpha)
 
-# %% ../nbs/00_core.ipynb 23
+# %% ../nbs/00_core.ipynb 24
 def overlay_mask_border_on_image(
         im_path: Union[Path, str],
         msk_path: Union[Path, str],
@@ -356,7 +405,7 @@ def overlay_mask_border_on_image(
 
 
 
-# %% ../nbs/00_core.ipynb 24
+# %% ../nbs/00_core.ipynb 25
 def overlay_mask_border_on_image_frm_img(
         img:Union[OpenCvImage, Image.Image],
         msk:Union[OpenCvImage, Image.Image],
@@ -380,7 +429,7 @@ def overlay_mask_border_on_image_frm_img(
     return cv2.cvtColor(cv2_img, cv2.COLOR_BGR2RGB)
 
 
-# %% ../nbs/00_core.ipynb 25
+# %% ../nbs/00_core.ipynb 26
 def concat_images(
         images:List[np.ndarray],
         rows:int,  # number of rows
@@ -406,7 +455,7 @@ def concat_images(
     im_n = cv2.putText(new_img, f'{number}', position, font, font_scale, color, 1, cv2.LINE_AA)
     return im_n
 
-# %% ../nbs/00_core.ipynb 26
+# %% ../nbs/00_core.ipynb 27
 def show_poster_from_path(
                 mask_path:str, 
                 im_path:str, # name of the image fodler , e.g. 'images' or 'X'
@@ -456,7 +505,7 @@ def show_poster_from_path(
         fig, ax = plt.subplots(1, 1, figsize=(scale * res[1]/dpi, scale*res[0]/dpi))
         ax.imshow(img_new)
 
-# %% ../nbs/00_core.ipynb 27
+# %% ../nbs/00_core.ipynb 28
 def seamless_clone(
         full_img:OpenCvImage, # gray scale image
         replace_part:OpenCvImage, # gray scale image
@@ -485,7 +534,7 @@ def seamless_clone(
     
     return cv2.cvtColor(cloned_img, cv2.COLOR_BGR2GRAY)
 
-# %% ../nbs/00_core.ipynb 28
+# %% ../nbs/00_core.ipynb 29
 def get_template_part(
     img:np.ndarray, #opencv image
     tmp_img:np.ndarray # opencv image
@@ -510,7 +559,7 @@ def get_template_part(
    return x, y, w, h
    
 
-# %% ../nbs/00_core.ipynb 29
+# %% ../nbs/00_core.ipynb 30
 def split_image(
         img:np.ndarray,
         num_splits:int,
@@ -541,7 +590,7 @@ def split_image(
 
     return parts
 
-# %% ../nbs/00_core.ipynb 30
+# %% ../nbs/00_core.ipynb 31
 def split_image_with_coordinates(
         img: np.ndarray, 
         num_splits: int, 
@@ -565,7 +614,7 @@ def split_image_with_coordinates(
 
     return indexed_parts_with_coords
 
-# %% ../nbs/00_core.ipynb 31
+# %% ../nbs/00_core.ipynb 32
 def create_same_shape(
         src_img:np.ndarray, # image which size needs to be replicated
         dst_img:np.ndarray, # image which needs to resized
@@ -584,7 +633,7 @@ def create_same_shape(
         return new
 
 
-# %% ../nbs/00_core.ipynb 32
+# %% ../nbs/00_core.ipynb 33
 def get_circle_from_single_pin(
                             sn_pin_img:np.ndarray
                               )->Tuple[np.ndarray, np.ndarray, np.ndarray]:
@@ -629,7 +678,7 @@ def get_circle_from_single_pin(
         return None, None, None
 
 
-# %% ../nbs/00_core.ipynb 33
+# %% ../nbs/00_core.ipynb 34
 def find_contours_binary(
     img:np.ndarray, # binary image 
     ):
@@ -638,7 +687,7 @@ def find_contours_binary(
     return cntrs
 
 
-# %% ../nbs/00_core.ipynb 34
+# %% ../nbs/00_core.ipynb 35
 def adjust_brightness(
     img:np.ndarray, # image to adjust brightness
     alpha:float, # alpha > 1 to brighten; alpha < 1 to darken
@@ -649,7 +698,7 @@ def adjust_brightness(
         alpha=alpha)  # alpha > 1 to brighten; alpha < 1 to darken
     return adjusted
 
-# %% ../nbs/00_core.ipynb 35
+# %% ../nbs/00_core.ipynb 36
 def ssim_(
         img1:np.ndarray, 
         img2:np.ndarray,
@@ -659,7 +708,7 @@ def ssim_(
     return ssim(img1, img2, win_size=win_size
                 )
 
-# %% ../nbs/00_core.ipynb 36
+# %% ../nbs/00_core.ipynb 37
 def orb_sim_(
         img1:np.ndarray, 
         img2:np.ndarray):
@@ -684,7 +733,7 @@ def orb_sim_(
         return len(list(sim_reg))/len(matches)
 
 
-# %% ../nbs/00_core.ipynb 37
+# %% ../nbs/00_core.ipynb 38
 def rot_based_on_ref_img(
     ref_img:Union[np.ndarray, Image.Image], # Image will be used refeernece image
     tst_img:Union[np.ndarray, Image.Image], # Image where searched for key points
@@ -725,10 +774,10 @@ def rot_based_on_ref_img(
     
 
 
-# %% ../nbs/00_core.ipynb 38
+# %% ../nbs/00_core.ipynb 39
 def frm_cntr_to_bbox(cntr):
     x,y,w,h = cv2.boundingRect(cntr)
     return x,y,w,h
 
-# %% ../nbs/00_core.ipynb 39
+# %% ../nbs/00_core.ipynb 40
 def foo(): pass
