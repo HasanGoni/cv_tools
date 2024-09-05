@@ -30,6 +30,7 @@ from scipy.ndimage import (
     )
 from skimage.color import label2rgb
 from skimage.restoration import denoise_nl_means, estimate_sigma, denoise_tv_chambolle
+import yaml
 from skimage import img_as_float
 import matplotlib as mpl
 
