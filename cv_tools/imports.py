@@ -9,8 +9,8 @@ from PIL import Image
 import cv2
 import shutil
 from tqdm.auto import tqdm
-from fastcore.script import *
-from fastcore.all import *
+#from fastcore.script import *
+#from fastcore.all import *
 
 try:
     from types import WrapperDescriptorType,MethodWrapperType,MethodDescriptorType
