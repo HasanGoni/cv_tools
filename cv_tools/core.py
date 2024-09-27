@@ -50,7 +50,7 @@ def filter_(self:Path, name_part:str):
 # %% ../nbs/00_core.ipynb 8
 def read_config(config_file:Path) -> Dict:
     'read config file'
-    with open (config_file, 'r') as file:
+    with open (f'{config_file}', 'r') as file:
         config = yaml.safe_load(file)
     return config
 
