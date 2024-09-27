@@ -1,4 +1,5 @@
 import sys,os,re,typing,itertools,operator,functools,math,warnings,functools,io,enum
+import numpy as np
 
 from operator import itemgetter,attrgetter
 from warnings import warn
