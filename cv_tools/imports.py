@@ -9,6 +9,7 @@ from pathlib import Path
 from PIL import Image
 import cv2
 import shutil
+import pandas as pd
 from tqdm.auto import tqdm
 #from fastcore.script import *
 #from fastcore.all import *
