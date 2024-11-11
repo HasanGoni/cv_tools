@@ -199,7 +199,7 @@ def interactive_roi_selector(img, mask_selected_area=True):
         mask = np.zeros_like(img)
         for x,y,w,h in roi_coords_list:
             mask[y:y+h, x:x+w] = 255
-        masked_img = cv2.bitwise_and(img, img, mask=mask)
+    masked_img = cv2.bitwise_and(img, img, mask=mask)
     return roi_coords_list, masked_img
 
         
