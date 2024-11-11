@@ -10,8 +10,8 @@ __all__ = ['OpenCvImage', 'get_name_', 'dpi', 'read_config', 'label_mask', 'find
            'overlay_mask', 'overlay_mask_border_on_image', 'overlay_mask_border_on_image_frm_img', 'concat_images',
            'show_poster_from_path', 'seamless_clone', 'get_template_part', 'plot_images_grid', 'get_template_part_img',
            'split_image', 'split_image_with_coordinates', 'create_same_shape', 'get_circle_from_single_pin',
-           'find_contours_binary', 'adjust_brightness', 'ssim_', 'orb_sim_', 'rot_based_on_ref_img', 'frm_cntr_to_bbox',
-           'foo']
+           'find_contours_binary', 'adjust_brightness', 'ssim_', 'orb_sim_', 'rot_based_on_ref_img', 'create_ref_dict',
+           'TemplateMatch', 'find_and_align_template', 'frm_cntr_to_bbox', 'foo']
 
 # %% ../nbs/00_core.ipynb 3
 from PIL import Image
@@ -1048,9 +1048,187 @@ def rot_based_on_ref_img(
 
 
 # %% ../nbs/00_core.ipynb 52
+def create_ref_dict(
+    tmp_img: np.ndarray,
+    x: int=240,
+    y: int=500,
+    w: int=2060,
+    h: int=1000
+    ) -> dict:
+    'Create a reference dictionary for the template'
+    return {'image': tmp_img, 'x1': x, 'y1': y, 'x2': x+w, 'y2': y+h}
+
+# %% ../nbs/00_core.ipynb 53
+@dataclass
+class TemplateMatch:
+    """Stores template matching results"""
+    location: Tuple[int, int]  # (x, y) of top-left corner
+    confidence: float  # matching confidence score
+    angle: float  # rotation angle in degrees
+    scale: float  # scale factor
+
+# %% ../nbs/00_core.ipynb 54
+def find_and_align_template(
+    template: np.ndarray,
+    test_image: np.ndarray,
+    angle_range: Tuple[float, float] = (-30, 30),
+    angle_step: float = 1.0,
+    scale_range: Tuple[float, float] = (0.8, 1.2),
+    scale_step: float = 0.05,
+    min_confidence: float = 0.7,
+    extra_search_area: int = 20  # pixels
+) -> Tuple[Optional[np.ndarray], Optional[Dict]]:
+    """
+    Finds a template in a test image and aligns it, handling both rotation and translation.
+    Additionally, it searches for the template in an expanded area of the test image.
+    
+    Args:
+        template: Template image to find
+        test_image: Image to search in
+        angle_range: (min_angle, max_angle) for rotation search
+        angle_step: Step size for rotation search
+        scale_range: (min_scale, max_scale) for scale search
+        scale_step: Step size for scale search
+        min_confidence: Minimum confidence threshold
+        extra_search_area: Pixels to expand the search area
+    
+    Returns:
+        Tuple of (aligned_region, transformation_params) or (None, None) if match fails
+    """
+    def _preprocess_image(img: np.ndarray) -> np.ndarray:
+        """Preprocesses image for better matching"""
+        if len(img.shape) == 3:
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        # Apply contrast enhancement
+        clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+        return clahe.apply(img)
+    
+    def _template_match_score(img: np.ndarray, templ: np.ndarray) -> Tuple[float, Tuple[int, int]]:
+        """Performs template matching and returns best score and location"""
+        result = cv2.matchTemplate(img, templ, cv2.TM_CCOEFF_NORMED)
+        min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+        return max_val, max_loc
+
+    try:
+        # Preprocess images
+        if template.size == 0 or test_image.size == 0:
+            raise ValueError("Empty template or test image")
+            
+        template_gray = _preprocess_image(template)
+        test_gray = _preprocess_image(test_image)
+        
+        h, w = template_gray.shape
+        best_match = TemplateMatch(
+            location=(0, 0),
+            confidence=0.0,
+            angle=0.0,
+            scale=1.0
+        )
+        
+        # Expand search area in test image
+        expanded_test_gray = np.zeros((test_gray.shape[0] + 2 * extra_search_area, test_gray.shape[1] + 2 * extra_search_area), dtype=np.uint8)
+        expanded_test_gray[extra_search_area:-extra_search_area, extra_search_area:-extra_search_area] = test_gray
+        
+        # Multi-scale and rotation search
+        for scale in np.arange(scale_range[0], scale_range[1] + scale_step, scale_step):
+            scaled_w = int(w * scale)
+            scaled_h = int(h * scale)
+            
+            if scaled_w <= 0 or scaled_h <= 0:
+                continue
+                
+            scaled_template = cv2.resize(template_gray, (scaled_w, scaled_h))
+            
+            for angle in np.arange(angle_range[0], angle_range[1] + angle_step, angle_step):
+                # Create rotation matrix
+                matrix = cv2.getRotationMatrix2D(
+                    (scaled_w / 2, scaled_h / 2),
+                    angle,
+                    1.0
+                )
+                
+                # Rotate template
+                rotated_template = cv2.warpAffine(
+                    scaled_template,
+                    matrix,
+                    (scaled_w, scaled_h),
+                    borderMode=cv2.BORDER_REPLICATE
+                )
+                
+                # Perform template matching on expanded test image
+                score, loc = _template_match_score(expanded_test_gray, rotated_template)
+                
+                # Update best match if better score found
+                if score > best_match.confidence:
+                    best_match = TemplateMatch(
+                        location=(loc[0] - extra_search_area, loc[1] - extra_search_area),  # Adjust for expanded search area
+                        confidence=score,
+                        angle=angle,
+                        scale=scale
+                    )
+        
+        # Check if match is good enough
+        if best_match.confidence < min_confidence:
+            logger.warning(f"No good match found. Best confidence: {best_match.confidence:.3f}")
+            return None, None
+            
+        # Extract and align matched region
+        x, y = best_match.location
+        scale = best_match.scale
+        angle = best_match.angle
+        
+        # Calculate transformed template dimensions
+        cos_angle = abs(math.cos(math.radians(angle)))
+        sin_angle = abs(math.sin(math.radians(angle)))
+        new_w = int((w * scale * cos_angle) + (h * scale * sin_angle))
+        new_h = int((h * scale * cos_angle) + (w * scale * sin_angle))
+        
+        # Extract region slightly larger than template
+        padding = 20  # pixels
+        roi_x = max(0, x - padding)
+        roi_y = max(0, y - padding)
+        roi_w = min(test_image.shape[1] - roi_x, new_w + 2 * padding)
+        roi_h = min(test_image.shape[0] - roi_y, new_h + 2 * padding)
+        
+        matched_region = test_image[roi_y:roi_y + roi_h, roi_x:roi_x + roi_w].copy()
+        
+        # Create transformation matrix
+        center = (roi_w / 2, roi_h / 2)
+        rotation_matrix = cv2.getRotationMatrix2D(center, -angle, 1.0 / scale)
+        
+        # Apply transformation
+        aligned_region = cv2.warpAffine(
+            matched_region,
+            rotation_matrix,
+            (roi_w, roi_h),
+            flags=cv2.INTER_CUBIC,
+            borderMode=cv2.BORDER_REPLICATE
+        )
+        
+        # Crop to template size
+        start_y = int((roi_h - h) / 2)
+        start_x = int((roi_w - w) / 2)
+        aligned_region = aligned_region[start_y:start_y + h, start_x:start_x + w]
+        
+        # Prepare transformation parameters
+        transform_params = {
+            'location': (x, y),
+            'angle': angle,
+            'scale': scale,
+            'confidence': best_match.confidence,
+            'original_size': (w, h)
+        }
+        
+        return aligned_region, transform_params
+        
+    except Exception as e:
+        logger.error(f"Template matching failed: {str(e)}")
+        return None, None
+
+# %% ../nbs/00_core.ipynb 55
 def frm_cntr_to_bbox(cntr):
     x,y,w,h = cv2.boundingRect(cntr)
     return x,y,w,h
 
-# %% ../nbs/00_core.ipynb 53
+# %% ../nbs/00_core.ipynb 56
 def foo(): pass
