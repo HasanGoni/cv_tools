@@ -28,8 +28,10 @@ def multi_otsu(img:np.array, classes:int=3)->np.array:
     """Multi-Otsu thresholding-> returns image of type np.uint8"""
     thresholds = threshold_multiotsu(img, classes)
     regions = np.digitize(img, bins=thresholds)
-    regions = regions.astype(np.uint8)
-    return regions
+    # Scale the regions to span full 8-bit range (0-255) by multiplying by 255/(num_classes-1)
+    # E.g. for 3 classes, maps [0,1,2] to [0,127,255]
+    regions = regions*(255//(classes-1))
+    return regions.astype(np.uint8)
 
 # %% ../nbs/02_cv_ops.ipynb 8
 def remove_small_objects(
