@@ -24,6 +24,7 @@ sys.path.append(str(custom_lib_path))
 from ..imports import *
 from dotenv import load_dotenv
 from smb.SMBConnection import SMBConnection
+from typing import List, Dict, Any
 
 # %% ../../nbs/09_data_processing.smb_tools.ipynb 7
 load_dotenv(dotenv_path=f'/home/ai_sintercra/homes/hasan/projects/git_data/cv_tools/cv_tools/.env')
@@ -40,9 +41,8 @@ def get_user_name_password(dotenv_path: str=None):
 def get_smb_filename(
     SERVER: str='MUCSDN57.eu.infineon.com',
     SHARE: str='earchive8$',
-    path_: str=r"Business_Transfer\WAR",
+    SMB_PATH: str=r"Business_Transfer\WAR",
     filter_ext: str=None,
-    subfolder: str=None,
     target_path: str=None,
     USERNAME: str=None,
     PASSWORD: str=None,
@@ -59,21 +59,15 @@ def get_smb_filename(
 
     try:
         # Corrected the path to match the expected SMB path format
-        if subfolder:
-            path_ = path_ + "\\" + subfolder
-        file_list = conn.listPath(SHARE, path_)
+        file_list = conn.listPath(SHARE, SMB_PATH)
         file_list = list(filter(lambda x: not(x.filename.startswith(".")), file_list))
         if filter_ext:
             file_list = list(filter(lambda x: x.filename.endswith(filter_ext), file_list))
         file_list_names = []
         for fn in file_list:
             ## Constructing the SMB path correctly for each file
-            if subfolder:
-                s_path = path_ + "\\" + subfolder + "\\" + fn.filename
-                t_path = Path(target_path, subfolder, fn.filename)
-            else:
-                s_path = path_ + "\\" + fn.filename
-                t_path = Path(target_path, fn.filename)
+            s_path = SMB_PATH + "\\" + fn.filename
+            t_path = Path(target_path, fn.filename)
             f_sz = fn.file_size
             t_path.parent.mkdir(parents=True, exist_ok=True)
             if Path(t_path).is_file():
@@ -81,7 +75,7 @@ def get_smb_filename(
                     file_list_names.append(f"{s_path}|{t_path}")
             else:
                 file_list_names.append(f"{s_path}|{t_path}")
-        
+        print(len(file_list_names), len(file_list))
         return file_list_names, file_list
     
     finally:
@@ -93,12 +87,21 @@ def download_single_file(
     SHARE: str,
     SERVER: str,
     USERNAME: str,
-    PASSWORD: str) -> None:
+    PASSWORD: str,
+    delete_source: bool = False) -> Dict[str, Any]:
     """
-    Downloads a single file from SMB to a local directory.
+    Downloads a single file from SMB to a local directory and optionally deletes the source file.
 
     Args:
     - smb_filename (str): The SMB path of the file to download, followed by a "|" and the target local path.
+    - SHARE (str): SMB share name
+    - SERVER (str): SMB server name
+    - USERNAME (str): SMB username
+    - PASSWORD (str): SMB password 
+    - delete_source (bool): Whether to delete source file after download (default: False)
+
+    Returns:
+    - Dict containing file metadata (name, size)
 
     Example:
     >>> download_single_file("smb://path/to/file.txt|local/path/to/file.txt")
@@ -115,9 +118,27 @@ def download_single_file(
         use_ntlm_v2=True)
     conn.connect(SERVER, 139)
 
+    file_info = {}
     try:
+        # Get file info before downloading
+        file_obj = conn.getAttributes(SHARE, source)
+        file_info = {
+            'filename': source.split('\\')[-1],
+            'size': file_obj.file_size,
+            'create_time': file_obj.create_time,
+            'last_modified': file_obj.last_write_time
+        }
+        
+        # Download file
         with open(target_name, 'wb') as fp:
             conn.retrieveFile(SHARE, source, fp)
+            
+        # Delete source if requested
+        if delete_source:
+            conn.deleteFiles(SHARE, source)
+            
+        return file_info
+            
     finally:
         conn.close()
 
