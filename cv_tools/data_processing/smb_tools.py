@@ -46,8 +46,23 @@ def get_smb_filename(
     target_path: str=None,
     USERNAME: str=None,
     PASSWORD: str=None,
+    filename_transform_fn: callable=None,
     ) -> List[str]:
-
+    """Get list of files from SMB share with optional filename transformation
+    
+    Args:
+        SERVER: SMB server address
+        SHARE: SMB share name 
+        SMB_PATH: Path within share to list files from
+        filter_ext: Optional file extension filter
+        target_path: Local path to download files to
+        USERNAME: SMB username
+        PASSWORD: SMB password
+        filename_transform_fn: Optional function to transform target filenames
+        
+    Returns:
+        Tuple of (list of source|target paths, list of SMB file objects)
+    """
 
     conn = SMBConnection(
         username=USERNAME, 
@@ -67,7 +82,11 @@ def get_smb_filename(
         for fn in file_list:
             ## Constructing the SMB path correctly for each file
             s_path = SMB_PATH + "\\" + fn.filename
-            t_path = Path(target_path, fn.filename)
+            
+            # Apply filename transformation if provided
+            target_filename = filename_transform_fn(fn) if filename_transform_fn else fn.filename
+            t_path = Path(target_path, target_filename)
+            
             f_sz = fn.file_size
             t_path.parent.mkdir(parents=True, exist_ok=True)
             if Path(t_path).is_file():
@@ -130,11 +149,15 @@ def download_single_file(
         }
         
         # Download file
-        with open(target_name, 'wb') as fp:
+        with open(target_path, 'wb') as fp:
             conn.retrieveFile(SHARE, source, fp)
-            
+
+        print(f"File downloaded successfully: {target_name}")
+        print(f"{'-'*100}")
+        print(f"{'-'*100}")  # Normal color
         # Delete source if requested
         if delete_source:
+            print('\033[91m' + "Deleting source file: " + source + '\033[0m')  # Red color
             conn.deleteFiles(SHARE, source)
             
         return file_info
