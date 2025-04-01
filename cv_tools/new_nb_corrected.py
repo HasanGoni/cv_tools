@@ -26,7 +26,7 @@ _description = Template("> $description")
 _export = "#| hide\nimport nbdev; nbdev.nbdev_export()"
 _custom_lib = "#| export\ncustom_lib_path = Path(r'/home/ai_warstein/homes/goni/custom_libs')\nsys.path.append(str(custom_lib_path))\n"
 _cv_tools= "#| export\nCV_TOOLS = Path(r'/home/ai_sintercra/homes/hasan/projects/git_data/cv_tools')\nsys.path.append(str(CV_TOOLS))\n"
-_cv_tools_imports= "#| export\nfrom cv_tools.imports import *"
+_cv_tools_imports= "#| export\nfrom cv_tools.imports import *\nfrom cv_tools.core import *\nfrom cv_tools.data_processing.smb_tools import *\n"
 
 
 def is_jupyterhub():
