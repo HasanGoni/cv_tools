@@ -39,27 +39,18 @@ def get_user_name_password(dotenv_path: str=None):
 
 # %% ../../nbs/09_data_processing.smb_tools.ipynb 9
 def get_smb_filename(
-    SERVER: str='MUCSDN57.eu.infineon.com',
-    SHARE: str='earchive8$',
-    SMB_PATH: str=r"Business_Transfer\WAR",
-    filter_ext: str=None,
-    target_path: str=None,
-    USERNAME: str=None,
-    PASSWORD: str=None,
-    filename_transform_fn: callable=None,
-    ) -> List[str]:
+    SERVER: str='MUCSDN57.eu.infineon.com', # SMB server address
+    SHARE: str='earchive8$', # SMB share name
+    SMB_PATH: str=r"Business_Transfer\WAR", # Path within share to list files from
+    filter_ext: str=None, # Optional file extension filter
+    target_path: str=None, # Local path to download files to
+    USERNAME: str=None, # SMB username
+    PASSWORD: str=None, # SMB password
+    filename_transform_fn: callable=None, # Optional function to transform target filenames
+    file_list: List[str]=None, # Optional list of specific filenames to filter for
+    ) -> tuple[list[str], list]: # Tuple of (list of source|target paths, list of SMB file objects)
     """Get list of files from SMB share with optional filename transformation
     
-    Args:
-        SERVER: SMB server address
-        SHARE: SMB share name 
-        SMB_PATH: Path within share to list files from
-        filter_ext: Optional file extension filter
-        target_path: Local path to download files to
-        USERNAME: SMB username
-        PASSWORD: SMB password
-        filename_transform_fn: Optional function to transform target filenames
-        
     Returns:
         Tuple of (list of source|target paths, list of SMB file objects)
     """
@@ -74,12 +65,20 @@ def get_smb_filename(
 
     try:
         # Corrected the path to match the expected SMB path format
-        file_list = conn.listPath(SHARE, SMB_PATH)
-        file_list = list(filter(lambda x: not(x.filename.startswith(".")), file_list))
+        smb_files = conn.listPath(SHARE, SMB_PATH)
+        smb_files = list(filter(lambda x: not(x.filename.startswith(".")), smb_files))
+        
+        # Filter by specific file list if provided
+        if file_list:
+            file_set = set(file_list)  # Convert to set for O(1) lookup performance
+            smb_files = list(filter(lambda x: x.filename in file_set, smb_files))
+        
+        # Apply extension filter if provided
         if filter_ext:
-            file_list = list(filter(lambda x: x.filename.endswith(filter_ext), file_list))
+            smb_files = list(filter(lambda x: x.filename.endswith(filter_ext), smb_files))
+            
         file_list_names = []
-        for fn in file_list:
+        for fn in smb_files:
             ## Constructing the SMB path correctly for each file
             s_path = SMB_PATH + "\\" + fn.filename
             
@@ -94,13 +93,13 @@ def get_smb_filename(
                     file_list_names.append(f"{s_path}|{t_path}")
             else:
                 file_list_names.append(f"{s_path}|{t_path}")
-        print(len(file_list_names), len(file_list))
-        return file_list_names, file_list
+        print(len(file_list_names), len(smb_files))
+        return file_list_names, smb_files
     
     finally:
         conn.close()
 
-# %% ../../nbs/09_data_processing.smb_tools.ipynb 10
+# %% ../../nbs/09_data_processing.smb_tools.ipynb 11
 def download_single_file(
     smb_filename: str, 
     SHARE: str,
@@ -165,5 +164,5 @@ def download_single_file(
     finally:
         conn.close()
 
-# %% ../../nbs/09_data_processing.smb_tools.ipynb 11
+# %% ../../nbs/09_data_processing.smb_tools.ipynb 12
 CURRETNT_NB='/home/ai_sintercra/homes/hasan/projects/git_data/cv_tools/nbs'
