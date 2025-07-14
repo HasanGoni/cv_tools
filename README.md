@@ -94,6 +94,22 @@ img
 
 ![](index_files/figure-commonmark/cell-8-output-1.png)
 
+``` python
+# Visualize image
+```
+
+``` python
+- In case of list of images need to be visualized
+```
+
+``` python
+plot_images_grid(
+    images=images,
+    rows=1, # number of rows
+    cols=2 # number of columns
+)
+```
+
 ### Cropping your image
 
 - so you have an image, you want to do centercrop from this image, but
@@ -129,7 +145,7 @@ crop_mask
 
      crop image has a size of (224, 224)
 
-![](index_files/figure-commonmark/cell-11-output-2.png)
+![](index_files/figure-commonmark/cell-14-output-2.png)
 
 - If expected to have a opencv image, then use `cv=True`
 
@@ -148,7 +164,7 @@ crop_mask_ocv = center_crop(
 show_(crop_mask_ocv)
 ```
 
-![](index_files/figure-commonmark/cell-13-output-1.png)
+![](index_files/figure-commonmark/cell-16-output-1.png)
 
 #### Overlay Image and Mask
 
@@ -162,7 +178,7 @@ overlay_mask(
 )
 ```
 
-![](index_files/figure-commonmark/cell-14-output-1.png)
+![](index_files/figure-commonmark/cell-17-output-1.png)
 
 - Sometimes one needs to see not the mask but the border line of the
   mask
@@ -178,7 +194,7 @@ overlay_mask_border_on_image(
 )
 ```
 
-![](index_files/figure-commonmark/cell-15-output-1.png)
+![](index_files/figure-commonmark/cell-18-output-1.png)
 
 - Sometimes you want to compare another image to the overlay image, then
   just use this image
@@ -206,7 +222,7 @@ overlay_mask_border_on_image(
 )
 ```
 
-![](index_files/figure-commonmark/cell-18-output-1.png)
+![](index_files/figure-commonmark/cell-21-output-1.png)
 
 #### Concatenating images
 
@@ -231,7 +247,7 @@ combined_img = concat_images(
 show_(combined_img)
 ```
 
-![](index_files/figure-commonmark/cell-21-output-1.png)
+![](index_files/figure-commonmark/cell-24-output-1.png)
 
 ``` python
 combined_img = concat_images(
@@ -246,7 +262,7 @@ combined_img = concat_images(
 show_(combined_img)
 ```
 
-![](index_files/figure-commonmark/cell-23-output-1.png)
+![](index_files/figure-commonmark/cell-26-output-1.png)
 
 - So you have one image where could be lots of masks or single masks,
   you doesn’t want to see full image, but only mask part of the image,
@@ -272,6 +288,42 @@ show_poster_from_path(
 
     error: OpenCV(4.8.1) /io/opencv/modules/imgproc/src/resize.cpp:4065: error: (-215:Assertion failed) inv_scale_x > 0 in function 'resize'
 
+    [0;31m---------------------------------------------------------------------------[0m
+    [0;31merror[0m                                     Traceback (most recent call last)
+    Cell [0;32mIn[46], line 1[0m
+    [0;32m----> 1[0m [43mshow_poster_from_path[49m[43m([49m
+    [1;32m      2[0m [43m    [49m[43mmask_path[49m[38;5;241;43m=[39;49m[43mMASK_PATH[49m[43m,[49m
+    [1;32m      3[0m [43m    [49m[43mim_path[49m[38;5;241;43m=[39;49m[43mIM_PATH[49m[38;5;241;43m.[39;49m[43mparent[49m[43m,[49m[43m [49m[38;5;66;43;03m# Remember here not the full image path,\[39;49;00m
+    [1;32m      4[0m [43m                        [49m[38;5;66;43;03m#but only folder name, from this folder [39;49;00m
+    [1;32m      5[0m [43m                        [49m[38;5;66;43;03m# Same file name as mask_path name will be[39;49;00m
+    [1;32m      6[0m [43m                        [49m[38;5;66;43;03m# searched[39;49;00m
+    [1;32m      7[0m [43m    [49m[43mshow_[49m[38;5;241;43m=[39;49m[38;5;124;43m'[39;49m[38;5;124;43mposter[39;49m[38;5;124;43m'[39;49m[43m,[49m[43m [49m[38;5;66;43;03m# only mask[39;49;00m
+    [1;32m      8[0m [43m    [49m[43mtext[49m[38;5;241;43m=[39;49m[38;5;124;43m'[39;49m[38;5;124;43mtest_poster[39;49m[38;5;124;43m'[39;49m
+    [1;32m      9[0m [43m)[49m
+
+    File [0;32m~/Schreibtisch/projects/git_data/cv_tools/cv_tools/core.py:340[0m, in [0;36mshow_poster_from_path[0;34m(mask_path, im_path, show_, text, scale)[0m
+    [1;32m    338[0m     new_img [38;5;241m=[39m img_[y[38;5;241m-[39moffset:y[38;5;241m+[39mh[38;5;241m+[39moffset, x[38;5;241m-[39moffset:x[38;5;241m+[39mw[38;5;241m+[39moffset]
+    [1;32m    339[0m     images_list[38;5;241m.[39mappend(new_img)
+    [0;32m--> 340[0m img_new [38;5;241m=[39m [43mconcat_images[49m[43m([49m[43mimages_list[49m[43m,[49m[43m [49m[43mrow[49m[43m,[49m[43m [49m[43mcol[49m[43m,[49m[43m [49m[43mnumber[49m[38;5;241;43m=[39;49m[43mtext[49m[43m)[49m
+    [1;32m    343[0m [38;5;66;03m# show imagess[39;00m
+    [1;32m    344[0m [38;5;28;01mif[39;00m show_ [38;5;241m==[39m [38;5;124m'[39m[38;5;124mboth[39m[38;5;124m'[39m:
+
+    File [0;32m~/Schreibtisch/projects/git_data/cv_tools/cv_tools/core.py:295[0m, in [0;36mconcat_images[0;34m(images, rows, cols, number)[0m
+    [1;32m    293[0m targe_h [38;5;241m=[39m [38;5;28mmin[39m([i[38;5;241m.[39mshape[[38;5;241m0[39m] [38;5;28;01mfor[39;00m i [38;5;129;01min[39;00m images])
+    [1;32m    294[0m target_w [38;5;241m=[39m [38;5;28mmin[39m([i[38;5;241m.[39mshape[[38;5;241m1[39m] [38;5;28;01mfor[39;00m i [38;5;129;01min[39;00m images])
+    [0;32m--> 295[0m res_img [38;5;241m=[39m [cv2[38;5;241m.[39mresize(i, (target_w, targe_h)) [38;5;28;01mfor[39;00m i [38;5;129;01min[39;00m images]
+    [1;32m    296[0m res [38;5;241m=[39m []
+    [1;32m    297[0m [38;5;28;01mfor[39;00m i [38;5;129;01min[39;00m [38;5;28mrange[39m(rows):
+
+    File [0;32m~/Schreibtisch/projects/git_data/cv_tools/cv_tools/core.py:295[0m, in [0;36m<listcomp>[0;34m(.0)[0m
+    [1;32m    293[0m targe_h [38;5;241m=[39m [38;5;28mmin[39m([i[38;5;241m.[39mshape[[38;5;241m0[39m] [38;5;28;01mfor[39;00m i [38;5;129;01min[39;00m images])
+    [1;32m    294[0m target_w [38;5;241m=[39m [38;5;28mmin[39m([i[38;5;241m.[39mshape[[38;5;241m1[39m] [38;5;28;01mfor[39;00m i [38;5;129;01min[39;00m images])
+    [0;32m--> 295[0m res_img [38;5;241m=[39m [[43mcv2[49m[38;5;241;43m.[39;49m[43mresize[49m[43m([49m[43mi[49m[43m,[49m[43m [49m[43m([49m[43mtarget_w[49m[43m,[49m[43m [49m[43mtarge_h[49m[43m)[49m[43m)[49m [38;5;28;01mfor[39;00m i [38;5;129;01min[39;00m images]
+    [1;32m    296[0m res [38;5;241m=[39m []
+    [1;32m    297[0m [38;5;28;01mfor[39;00m i [38;5;129;01min[39;00m [38;5;28mrange[39m(rows):
+
+    [0;31merror[0m: OpenCV(4.8.1) /io/opencv/modules/imgproc/src/resize.cpp:4065: error: (-215:Assertion failed) inv_scale_x > 0 in function 'resize'
+
 - In case of single poster, it is not helpful, When you have lot’s of
   small objects, then may be it is interesting
 
@@ -288,6 +340,14 @@ x, y, w, h=get_template_part(
     tmp_img=tmp_im_path
 )
 tmp_part = img[y:y +h, x: x+w]
+```
+
+``` python
+> in case of only tempalte part is needed
+tmp_part = get_template_part_img(
+    im=img, # actual image
+    tm_im=tmplate_image, # template image
+)
 ```
 
 #### Finding contour from a binary mask
@@ -321,7 +381,7 @@ thrs_img = multi_otsu(img, classes=3)
 show_(thrs_img)
 ```
 
-![](index_files/figure-commonmark/cell-31-output-1.png)
+![](index_files/figure-commonmark/cell-35-output-1.png)
 
 #### Split Image
 
@@ -335,22 +395,24 @@ splitted_parts = split_image(img, num_splits=3, direction='horizontal')
 show_(splitted_parts)
 ```
 
-![](index_files/figure-commonmark/cell-32-output-1.png)
+![](index_files/figure-commonmark/cell-36-output-1.png)
 
-![](index_files/figure-commonmark/cell-32-output-2.png)
+![](index_files/figure-commonmark/cell-36-output-2.png)
 
-![](index_files/figure-commonmark/cell-32-output-3.png)
+![](index_files/figure-commonmark/cell-36-output-3.png)
 
 ``` python
 splitted_parts_v = split_image(img, num_splits=3, direction='vertical')
 show_(splitted_parts_v)
 ```
 
-![](index_files/figure-commonmark/cell-33-output-1.png)
+![](index_files/figure-commonmark/cell-37-output-1.png)
 
-![](index_files/figure-commonmark/cell-33-output-2.png)
+![](index_files/figure-commonmark/cell-37-output-2.png)
 
-![](index_files/figure-commonmark/cell-33-output-3.png)
+![](index_files/figure-commonmark/cell-37-output-3.png)
+
+# Background Normalization
 
 #### Correction of Masks
 
@@ -406,6 +468,93 @@ display_image_row(
 )
 ```
 
+``` python
+img, _=get_single_sample(
+    split='train',
+    INDEX=0,
+    name='hasangoni/Electron_microscopy_dataset',
+    type='numpy'
+)
+```
+
+``` python
+b_img = rolling_ball_substraction(image=img, radius=50)
+b_img_60 = rolling_ball_substraction(image=img, radius=60)
+b_img_70 = rolling_ball_substraction(image=img, radius=70)
+b_img_90 = rolling_ball_substraction(image=img, radius=90)
+b_img_100 = rolling_ball_substraction(image=img, radius=100)
+```
+
+``` python
+show_images_(
+    images=[img, b_img, b_img_60, b_img_70, b_img_90, b_img_100], 
+    titles=[
+        'Original', 
+        'Rolling Ball Subtraction with radius 50', 
+        'Rolling Ball Subtraction with radius 60', 
+        'Rolling Ball Subtraction with radius 70', 
+        'Rolling Ball Subtraction with radius 90', 
+        'Rolling Ball Subtraction with radius 100'])
+```
+
+![](index_files/figure-commonmark/cell-46-output-1.png)
+
+``` python
+flat_field_img = flat_field_correction(
+    image=img,
+    background_estimate=None,
+    sigma=50,
+)
+
+show_images_(
+    images=[img, flat_field_img], 
+    titles=['Original', 'Flat Field Correction'])
+```
+
+![](index_files/figure-commonmark/cell-47-output-1.png)
+
+``` python
+adaptive_img = adaptive_background_normalization(
+    image=img,
+    block_size=64,
+    method='mean',
+)
+
+adaptive_img_median = adaptive_background_normalization(
+    image=img,
+    block_size=64,
+    method='median',
+)
+
+morphological_img = morphological_background_removal(
+    image=img,
+    kernel_size=15,
+)
+frequency_img = frequency_domain_background_removal(
+    image=img,
+    cutoff_frequency=0.1,
+)
+multi_scale_img = multi_scale_background_removal(
+    image=img,
+    scales=[10, 30, 50],
+)
+processed_img = process_image_background_normalization(
+    image_path=img,
+    method='combined',
+)
+
+show_images_(
+    images=[img, adaptive_img, adaptive_img_median, morphological_img, frequency_img, multi_scale_img, processed_img], 
+    titles=[
+        'Original', 'Adaptive Mean', 'Adaptive (Median)', 
+        'Morphological Background Removal', 'Frequency Domain Background Removal', 
+        'Multi-scale Background Removal', 'combined'])
+```
+
+![](index_files/figure-commonmark/cell-48-output-1.png)
+
+**process_images_parallel_bg_normalization** is also implemented
+
 ## Compress and filter
 
 ``` python
@@ -438,21 +587,13 @@ decode_batch(
 )
 ```
 
+# Get interactive interface to get coordinates of the image
+
 ``` python
+interactive_get_coordinates(
+    img=img) # image will be image
 ```
 
-<style>
-    /* Turns off some styling */
-    progress {
-        /* gets rid of default border in Firefox and Opera. */
-        border: none;
-        /* Needs to be in here for Safari polyfill so background images work as expected. */
-        background-size: auto;
-    }
-    progress:not([value]), progress:not([value])::-webkit-progress-bar {
-        background: repeating-linear-gradient(45deg, #7e7e7e, #7e7e7e 10px, #5c5c5c 10px, #5c5c5c 20px);
-    }
-    .progress-bar-interrupted, .progress-bar-interrupted::-webkit-progress-bar {
-        background: #F44336;
-    }
-</style>
+> then it will create an interactive interface you need to click
+> bounding box of the image, - r -reset - Escapae- done - after that you
+> will get a list of coordinates of the image

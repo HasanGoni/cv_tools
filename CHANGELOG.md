@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+
+## [1.0.0] - 2025-07-14
+### Added
+- Background normalization functions
+
 ### Added
 - HPC (High Performance Computing) tools for parallel processing
   - LSF (bsub) job submission and monitoring

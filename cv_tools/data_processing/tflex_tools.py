@@ -451,44 +451,44 @@ if __name__ == "__main__":
 # EXAMPLE USAGE
 # ===============================================================================
 
-if __name__ == "__main__":
-    # Example 1: Individual file processing (original method)
-    print("=== Original Method: Individual Files ===")
-    generate_tflex_commands(
-        input_folder="/path/to/data",
-        python_script="process_single_file.py",
-        file_pattern="*.txt"
-    )
+#if __name__ == "__main__":
+    ## Example 1: Individual file processing (original method)
+    #print("=== Original Method: Individual Files ===")
+    #generate_tflex_commands(
+        #input_folder="/path/to/data",
+        #python_script="process_single_file.py",
+        #file_pattern="*.txt"
+    #)
     
-    print("\\n" + "="*50 + "\\n")
+    #print("\\n" + "="*50 + "\\n")
     
-    # Example 2: Batch processing (new method)
-    print("=== New Method: Batch Processing ===")
-    batch_result = generate_batch_tflex_commands(
-        input_folder="/path/to/data", 
-        python_script="process_batch.py",
-        files_per_batch=50,
-        file_extensions=['.txt', '.csv', '.json'],
-        script_args="--output-dir ./results --num-processes 8"
-    )
+    ## Example 2: Batch processing (new method)
+    #print("=== New Method: Batch Processing ===")
+    #batch_result = generate_batch_tflex_commands(
+        #input_folder="/path/to/data", 
+        #python_script="process_batch.py",
+        #files_per_batch=50,
+        #file_extensions=['.txt', '.csv', '.json'],
+        #script_args="--output-dir ./results --num-processes 8"
+    #)
     
-    if batch_result:
-        print(f"\\nBatch processing setup complete!")
-        print(f"Run: tflex {batch_result['command_file']}")
-        print(f"Total batches: {batch_result['total_batches']}")
-        print(f"Files per batch: ~{batch_result['files_per_batch']}")
+    #if batch_result:
+        #print(f"\\nBatch processing setup complete!")
+        #print(f"Run: tflex {batch_result['command_file']}")
+        #print(f"Total batches: {batch_result['total_batches']}")
+        #print(f"Files per batch: ~{batch_result['files_per_batch']}")
     
-    print("\\n" + "="*50 + "\\n")
+    #print("\\n" + "="*50 + "\\n")
     
-    # Example 3: Create template for batch processor
-    print("=== Creating Batch Processor Template ===")
-    create_batch_processing_template()
+    ## Example 3: Create template for batch processor
+    #print("=== Creating Batch Processor Template ===")
+    #create_batch_processing_template()
     
-    # Example 4: Specialized image processing
-    print("\\n=== Image Processing Example ===")
-    image_result = generate_image_batch_commands(
-        image_folder="/path/to/images",
-        processing_script="image_batch_processor.py",
-        images_per_batch=100,
-        num_processes=4
-    )
+    ## Example 4: Specialized image processing
+    #print("\\n=== Image Processing Example ===")
+    #image_result = generate_image_batch_commands(
+        #image_folder="/path/to/images",
+        #processing_script="image_batch_processor.py",
+        #images_per_batch=100,
+        #num_processes=4
+    #)

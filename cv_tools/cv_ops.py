@@ -28,6 +28,8 @@ import os
 from tqdm.auto import tqdm
 import argparse
 
+from datasets import load_dataset
+
 # %% ../nbs/02_cv_ops.ipynb 7
 def get_whole_dataset(
     split:str='train',
@@ -138,7 +140,7 @@ def rolling_ball_substraction(
 # %% ../nbs/02_cv_ops.ipynb 19
 def flat_field_correction(
     image:np.ndarray,
-    background_estimate:np.ndarray, # Pre-computed background, if None estimated using guassian blur
+    background_estimate:np.ndarray=None, # Pre-computed background, if None estimated using guassian blur
     sigma:float=50.0, # sigma of the gaussian blur, if background_estimate is None
     ):
     'Flat field correction to normalize illumination variations'
@@ -181,7 +183,10 @@ def adaptive_background_normalization(
         # Box filter computes the average of pixels in a rectangular neighborhood around each pixel
         local_mean = cv2.boxFilter(image_f, -1, (block_size, block_size))
     elif method == 'median':
-        local_mean = cv2.medianBlur(image_f, block_size)
+        # Ensure block_size is odd for medianBlur
+        if block_size % 2 == 0:
+            block_size += 1
+        local_mean = cv2.medianBlur(image_f.astype(np.uint8), block_size).astype(np.float32)
     else:
         raise ValueError(f'Invalid method: {method}')
 
@@ -228,6 +233,7 @@ def morphological_background_removal(
     # They don't consider float precision - operations are done in integer domain
     result = cv2.add(image, top_hat)  # Add bright features back
     result = cv2.subtract(result, black_hat)  # Remove dark artifacts
+    return result
 
 # %% ../nbs/02_cv_ops.ipynb 22
 def frequency_domain_background_removal(
@@ -313,7 +319,7 @@ def multi_scale_background_removal(
 
     for scale in scales:
         # Create a Gaussian kernel with the current scale
-        blr = cv2.getGaussianKernel(image_f, (0,0), scale)
+        blr = cv2.GaussianBlur(image_f, (0,0), scale)
         diff = image_f - blr
 
         weight = 1.0 / len(scales)
@@ -328,7 +334,7 @@ def multi_scale_background_removal(
     return res.astype(np.uint8)
 
 
-# %% ../nbs/02_cv_ops.ipynb 24
+# %% ../nbs/02_cv_ops.ipynb 25
 def process_image_background_normalization(
     image_path:Union[str, Path], # image to process
     method:str='rolling_ball', # options: 'rolling_ball', 'flat_field', 'adaptive', 'morphological', 'frequency', 'multi_scale', 'combined', 'noop',
@@ -339,10 +345,19 @@ def process_image_background_normalization(
     morphological_kernel_size:int=15, # size of the kernel for the morphological background removal
     frequency_cutoff_frequency:float=0.1, # cutoff frequency for the frequency domain background removal
     multi_scale_scales:list[float]=[10, 30, 50], # scales for the multi-scale background removal
+    apply_clahe:bool=False, # apply clahe to the processed image
+    clahe_clip_limit:int=2.0, # clip limit for the clahe
+    clahe_tile_grid_size:int=8, # tile grid size for the clahe
+    save_path:Union[str, Path]=None, # path to save the processed image
     )-> np.ndarray: # Processed image
     'Process image background normalization'
 
-    image = read_image(image_path)
+    if isinstance(image_path, str):
+        image_path = Path(image_path)
+        image = read_image(image_path)
+    else:
+
+        image = image_path
 
     if method == 'rolling_ball':
         processed_image = rolling_ball_substraction(
@@ -400,8 +415,13 @@ def process_image_background_normalization(
         processed_image = clahe.apply(processed_image)
 
     if save_path:
+        if isinstance(image_path, str):
+            image_path = Path(image_path)
+        else:
+            image_path = 'image.png'
         save_path = Path(save_path).mkdir(parents=True, exist_ok=True)
         output_path = save_path / f'normalized_{image_path.name}'
+
         cv2.imwrite(str(output_path), processed_image)
 
     return processed_image
@@ -409,7 +429,7 @@ def process_image_background_normalization(
    
 
 
-# %% ../nbs/02_cv_ops.ipynb 25
+# %% ../nbs/02_cv_ops.ipynb 26
 def process_images_parallel_bg_normalization(
     image_paths:list[Union[str, Path]], # list of image paths
     method:str='combined', # options: 'rolling_ball', 'flat_field', 'adaptive', 'morphological', 'frequency', 'multi_scale', 'combined', 'noop',
